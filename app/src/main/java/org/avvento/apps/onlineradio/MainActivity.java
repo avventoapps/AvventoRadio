@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements Serializable {
     private Info info;
     private MainActivity mainActivity;
 
-    private void initialise(final boolean playing) {
+    private void initialise() {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -68,9 +68,6 @@ public class MainActivity extends AppCompatActivity implements Serializable {
                                 tickerView.addChildView(tv);
                             }
                             tickerView.showTickers();
-                            if(!playing) {
-                                bus.post(new StreamingEvent(radio));
-                            }
                         }
                     }
                 });
@@ -113,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements Serializable {
         setContentView(R.layout.activity_main);
         streamBtn = findViewById(R.id.audioStreamBtn);
         mainActivity = this;
-        initialise(false);
+        initialise();
         bus.register(mainActivity);
 
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
@@ -122,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements Serializable {
     @Override
     protected void onResume() {
         super.onResume();
-        initialise(true);
+        initialise();
     }
 
     @Override
