@@ -16,6 +16,12 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.gson.Gson;
 import com.vinay.ticker.lib.TickerView;
 
@@ -24,18 +30,17 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.Serializable;
 import java.net.URL;
 import java.util.Scanner;
 
-public class MainActivity extends AppCompatActivity implements Serializable {
+public class MainActivity extends AppCompatActivity implements ExoPlayer.EventListener {
     private Button streamBtn;
     private EventBus bus = EventBus.getDefault();
-    private AvventoMedia radio;
+    private AvventoMedia avventoMedia;
     private Info info;
     private MainActivity mainActivity;
 
-    private void initialise() {
+    private void initialise(final boolean playing) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -49,8 +54,8 @@ public class MainActivity extends AppCompatActivity implements Serializable {
                             streamBtn.setEnabled(false);
                         } else {
                             streamBtn.setEnabled(true);
-                            radio = AvventoMedia.getInstance();
-                            if (radio.getRadio().isPlaying()) {
+                            avventoMedia = AvventoMedia.getInstance(mainActivity);
+                            if (avventoMedia.isPlaying()) {
                                 streamBtn.setText(getString(R.string.pause_streaming));
                             } else {
                                 streamBtn.setText(getString(R.string.start_streaming));
@@ -68,6 +73,9 @@ public class MainActivity extends AppCompatActivity implements Serializable {
                                 tickerView.addChildView(tv);
                             }
                             tickerView.showTickers();
+                            if(!playing) {
+                                bus.post(new StreamingEvent(avventoMedia));
+                            }
                         }
                     }
                 });
@@ -76,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements Serializable {
     }
 
     public void playAudio(View view) {
-        bus.post(new StreamingEvent(radio));
+        bus.post(new StreamingEvent(avventoMedia));
     }
 
     private Info getInfo() {
@@ -93,24 +101,24 @@ public class MainActivity extends AppCompatActivity implements Serializable {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onStreaming(StreamingEvent streamingEvent){
-        if(streamingEvent.getAvventoMedia().getRadio().isPlaying()) {
-            streamingEvent.getAvventoMedia().getRadio().pause();
+        if(streamingEvent.getAvventoMedia().isPlaying()) {
+            streamingEvent.getAvventoMedia().pause();
             streamBtn.setText(getString(R.string.start_streaming));
         } else {
-            streamingEvent.getAvventoMedia().getRadio().start();
+            streamingEvent.getAvventoMedia().play();
             streamBtn.setText(getString(R.string.pause_streaming));
         }
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        super.onCreate(savedInstanceState);
         streamBtn = findViewById(R.id.audioStreamBtn);
         mainActivity = this;
-        initialise();
+        initialise(false);
         bus.register(mainActivity);
 
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
@@ -119,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements Serializable {
     @Override
     protected void onResume() {
         super.onResume();
-        initialise();
+        initialise(true);
     }
 
     @Override
@@ -141,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements Serializable {
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://avventohome.org/avventoradio-schedules")));
             return true;
         } else if(id == R.id.ads) {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://avventohome.org/avvento-radio-ads")));
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://avventohome.org/avvento-avventoMedia-ads")));
             return true;
         } else if(id == R.id.broadcast) {
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://avventohome.org/previous-broadcasts")));
@@ -153,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements Serializable {
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://chat.whatsapp.com/I6meIZSpogs43FbpAYvsLJ")));
             return true;
         } else if(id == R.id.radio) {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://media.avventohome.org")));
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://avventoMedia.avventohome.org")));
             return true;
         } else if(id == R.id.facebook) {
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/AvventoProductions")));
@@ -172,4 +180,43 @@ public class MainActivity extends AppCompatActivity implements Serializable {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onTimelineChanged(Timeline timeline, Object manifest) {
+
+    }
+
+    @Override
+    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+
+    }
+
+    @Override
+    public void onLoadingChanged(boolean isLoading) {
+
+    }
+
+    @Override
+    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+
+    }
+
+    @Override
+    public void onPlayerError(ExoPlaybackException error) {
+        System.out.println(error.getMessage());
+    }
+
+    @Override
+    public void onPositionDiscontinuity() {
+
+    }
+
+    @Override
+    public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+
+    }
+
+    @Override
+    public void onRepeatModeChanged(int repeatMode) {
+
+    }
 }
