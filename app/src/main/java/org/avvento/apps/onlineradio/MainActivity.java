@@ -201,8 +201,8 @@ public class MainActivity extends AppCompatActivity implements ExoPlayer.EventLi
     }
 
     @Override
-    public void onPlayerError(ExoPlaybackException error) {
-        System.out.println(error.getMessage());
+    public void onPlayerError(ExoPlaybackException ex) {
+        Log.e("AvventoRadio Error!", ex.getMessage());
     }
 
     @Override

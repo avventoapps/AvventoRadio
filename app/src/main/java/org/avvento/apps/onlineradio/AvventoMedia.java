@@ -20,7 +20,7 @@ import okhttp3.OkHttpClient;
 public class AvventoMedia {
     private static AvventoMedia instance;
     private SimpleExoPlayer avventoMedia;
-    private static String URL = "https://radio.avventohome.org/radio/8000/avvento.mp3";
+    private static String URL = "http://radio.avventohome.org/radio/8000/avvento.mp3";
     private AvventoMedia(MainActivity mainActivity) {
         avventoMedia = ExoPlayerFactory.newSimpleInstance(new DefaultRenderersFactory(mainActivity.getApplicationContext()), new DefaultTrackSelector(new AdaptiveTrackSelection.Factory(new DefaultBandwidthMeter())), new DefaultLoadControl());
         avventoMedia.addListener(mainActivity);
